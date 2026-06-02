@@ -2,10 +2,9 @@
   "name": "phonebook-backend",
   "version": "1.0.0",
   "main": "index.js",
-    "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint ."
+     "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
