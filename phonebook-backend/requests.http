@@ -1,0 +1,18 @@
+### Get all persons
+GET http://localhost:3001/api/persons
+
+###
+
+### Create a new person
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Dan Abramov",
+  "number": "12-43-234345"
+}
+
+###
+
+### Delete a person (Replace with a real ID from your database)
+DELETE http://localhost:3001/api/persons/665bc7291a54b38d77f2bc21

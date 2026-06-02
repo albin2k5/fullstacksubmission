@@ -1,134 +1,141 @@
+require('dotenv').config()
 const express = require('express')
-const morgan = require('morgan') // 1. Import morgan (Step 3.7)
-const app = express()
+const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 
-app.use(cors()) // Add this near your other app.use() lines at the top
+const app = express()
+
+app.use(express.static('dist'))
 app.use(express.json())
+app.use(cors())
 
-// 2. Create a custom token to extract the request body (Step 3.8)
-// Only returns a stringified body if the method is POST
 morgan.token('body', (req) => {
-  if (req.method === 'POST') {
+  if (req.method === 'POST' || req.method === 'PUT') {
     return JSON.stringify(req.body)
   }
-  return '' // Returns nothing for GET, DELETE, etc.
+  return ''
 })
-
-// 3. Configure Morgan to use the 'tiny' format plus our custom 'body' token
-// Format: :method :url :status :res[content-length] - :response-time ms :body
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-// Hardcoded initial data pool
-let persons = [
-  { id: "1", name: "Arto Hellas", number: "040-123456" },
-  { id: "2", name: "Ada Lovelace", number: "39-44-5323523" },
-  { id: "3", name: "Dan Abramov", number: "12-43-234345" },
-  { id: "4", name: "Mary Poppendieck", number: "39-23-6423122" }
-]
-
-// ... Leave all your route handlers (app.get, app.delete, app.post) exactly as they were before ...
-
 // ==========================================
-// 3.1: Phonebook backend step 1
-// Fetch all phonebook entries
+// 3.13 & 3.18: Fetch All
 // ==========================================
-app.get('/api/persons', (request, response) => {
-  response.json(persons)
+app.get('/api/persons', (request, response, next) => {
+  Person.find({})
+    .then(persons => {
+      response.json(persons)
+    })
+    .catch(error => next(error))
 })
 
 // ==========================================
-// 3.2: Phonebook backend step 2
-// Summary dashboard page showing counts and request timestamp
+// 3.18: Info Dashboard linked to DB
 // ==========================================
-app.get('/info', (request, response) => {
-  const entriesCount = persons.length
-  const dateInfo = new Date()
-
-  response.send(`
-    <p>Phonebook has info for ${entriesCount} people</p>
-    <p>${dateInfo}</p>
-  `)
+app.get('/info', (request, response, next) => {
+  Person.countDocuments({})
+    .then(count => {
+      response.send(`
+        <p>Phonebook has info for ${count} people</p>
+        <p>${new Date()}</p>
+      `)
+    })
+    .catch(error => next(error))
 })
 
 // ==========================================
-// 3.3: Phonebook backend step 3
-// Retrieve details for a single item by unique ID
+// 3.18: Fetch Single Entry by ID
 // ==========================================
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  const person = persons.find(p => p.id === id)
-
-  if (person) {
-    response.json(person)
-  } else {
-    // Respond with 404 Not Found if ID does not exist
-    response.status(404).end()
-  }
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end() // If id doesn't exist, send 404
+      }
+    })
+    .catch(error => next(error)) // Forward malformatted IDs directly to our Error Middleware
 })
 
 // ==========================================
-// 3.4: Phonebook backend step 4
-// Remove an entry by ID
+// Create New Entry
 // ==========================================
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  const person = persons.find(p => p.id === id)
-
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).end()
-  }
-})
-
-app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  persons = persons.filter(p => p.id !== id)
-  
-  // 244 No Content is standard for a successful deletion path
-  response.status(204).end()
-})
-
-// ==========================================
-// 3.5 & 3.6: Phonebook backend steps 5 & 6
-// Create new resource with validation logic
-// ==========================================
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
-  // Error validation: Check if payload properties exist (Step 3.6)
   if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'name or number is missing' 
-    })
+    return response.status(400).json({ error: 'name or number missing' })
   }
 
-  // Error validation: Ensure name uniqueness across current pool (Step 3.6)
-  const nameExists = persons.some(p => p.name.toLowerCase() === body.name.toLowerCase())
-  if (nameExists) {
-    return response.status(400).json({ 
-      error: 'name must be unique' 
-    })
-  }
-
-  // Generate large random id value (Step 3.5)
-  const randomId = Math.floor(Math.random() * 10000000)
-
-  const newPerson = {
-    id: String(randomId),
+  const person = new Person({
     name: body.name,
-    number: body.number
-  }
+    number: body.number,
+  })
 
-  persons = persons.concat(newPerson)
-  response.json(newPerson)
-})
-app.get('/', (request, response) => {
-  response.send('<h1>Welcome to the Phonebook Backend!</h1><p>Try visiting <a href="/api/persons">/api/persons</a> or <a href="/info">/info</a></p>')
+  person.save()
+    .then(savedPerson => {
+      response.json(savedPerson)
+    })
+    .catch(error => next(error))
 })
 
-// Setup fallback port configurations
+// ==========================================
+// 3.15: Phonebook database, step 3 (DELETE)
+// ==========================================
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end() // Successfully removed or already gone
+    })
+    .catch(error => next(error))
+})
+
+// ==========================================
+// 3.17*: Phonebook database, step 5 (PUT Update)
+// ==========================================
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body
+
+  // { new: true } returns the modified document instead of the original one
+  // { runValidators: true } ensures data remains valid if schemas change later
+  Person.findByIdAndUpdate(
+    request.params.id, 
+    { name, number }, 
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        response.json(updatedPerson)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
+
+// Catch-all fallback middleware for non-matching URLs
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+// ==========================================
+// 3.16: Phonebook database, step 4 (Error Middleware)
+// CRITICAL: Must be the absolute last loaded middleware!
+// ==========================================
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  // Pass along any unhandled errors to standard default Express handler
+  next(error)
+}
+app.use(errorHandler)
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
