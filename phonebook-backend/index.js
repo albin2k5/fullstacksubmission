@@ -121,22 +121,18 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 // ==========================================
-// 3.16: Phonebook database, step 4 (Error Middleware)
-// CRITICAL: Must be the absolute last loaded middleware!
+// 3.16 & 3.19: Updated Central Error Middleware
 // ==========================================
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
+  } else if (error.name === 'ValidationError') {
+    // Intercept validation failures and pass down the message array string
+    return response.status(400).json({ error: error.message })
+  }
 
-  // Pass along any unhandled errors to standard default Express handler
   next(error)
 }
 app.use(errorHandler)
-
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
