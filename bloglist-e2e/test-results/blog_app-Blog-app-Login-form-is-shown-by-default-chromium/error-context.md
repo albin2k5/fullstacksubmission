@@ -12,27 +12,13 @@
 # Error details
 
 ```
-Error: expect(locator).toBeVisible() failed
-
-Locator: getByText(/log in to application/i)
-Expected: visible
-Timeout: 5000ms
-Error: element(s) not found
-
+Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3003
 Call log:
-  - Expect "toBeVisible" with timeout 5000ms
-  - waiting for getByText(/log in to application/i)
+  - → POST http://127.0.0.1:3003/api/testing/reset
+    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
 
-```
-
-```yaml
-- text: "[plugin:vite:import-analysis] Failed to resolve import \"react-router-dom\" from \"src/App.jsx\". Does the file exist? /workspaces/fullstacksubmission/bloglist-frontend/src/App.jsx:2:85 17 | var _s = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$(); 18 | import { useState, useEffect } from \"react\"; 19 | import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from \"react-router-dom\"; | ^ 20 | const NavigationBar = ({ user, handleLogout }) => { 21 | const navStyle = { at TransformPluginContext._formatLog (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42517:41) at TransformPluginContext.error (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42514:16) at normalizeUrl (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40493:23) at process.processTicksAndRejections (node:internal/process/task_queues:104:5) at async file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40612:37 at async Promise.all (index 4) at async TransformPluginContext.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40539:7) at async EnvironmentPluginContainer.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42312:18) at async loadAndTransform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35738:27 Click outside, press Esc key, or fix the code to dismiss. You can also disable this overlay by setting"
-- code: server.hmr.overlay
-- text: to
-- code: "false"
-- text: in
-- code: vite.config.js
-- text: .
 ```
 
 # Test source
@@ -43,7 +29,8 @@ Call log:
   3   | describe('Blog app', () => {
   4   |   beforeEach(async ({ page, request }) => {
   5   |     // 5.18: Empty database via backend testing reset endpoint before each run
-  6   |    await request.post('http://127.0.0.1:3003/api/testing/reset')
+> 6   |    await request.post('http://127.0.0.1:3003/api/testing/reset')
+      |                  ^ Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3003
   7   | 
   8   |     // 5.18: Seed a user profile structurally into the backend
   9   |     await request.post('http://127.0.0.1:3003/api/users', {
@@ -60,8 +47,7 @@ Call log:
   20  |     // 5.17: Blog List End To End Testing, step 1
   21  |   test('Login form is shown by default', async ({ page }) => {
   22  |     // Using a case-insensitive regular expression /.../i handles both capitalized and lowercase variations smoothly
-> 23  |     await expect(page.getByText(/log in to application/i)).toBeVisible()
-      |                                                            ^ Error: expect(locator).toBeVisible() failed
+  23  |     await expect(page.getByText(/log in to application/i)).toBeVisible()
   24  |     await expect(page.locator('input').first()).toBeVisible()
   25  |   })
   26  | 
@@ -145,21 +131,4 @@ Call log:
   104 |     test('blogs are sorted descending by number of likes', async ({ page }) => {
   105 |       // Setup: Seed multiple blogs natively
   106 |       const blogsData = [
-  107 |         { title: 'Least Likes Blog', author: 'A', url: 'http://a.com' },
-  108 |         { title: 'Most Likes Blog', author: 'B', url: 'http://b.com' },
-  109 |         { title: 'Medium Likes Blog', author: 'C', url: 'http://c.com' }
-  110 |       ]
-  111 | 
-  112 |       for (const b of blogsData) {
-  113 |         await page.getByRole('button', { name: 'create new blog' }).click()
-  114 |         await page.locator('input[name="Title"]').fill(b.title)
-  115 |         await page.locator('input[name="Author"]').fill(b.author)
-  116 |         await page.locator('input[name="Url"]').fill(b.url)
-  117 |         await page.getByRole('button', { name: 'create' }).click()
-  118 |       }
-  119 | 
-  120 |       // Open detail panels to access like buttons
-  121 |       const viewButtons = await page.getByRole('button', { name: 'view' }).all()
-  122 |       for (const btn of viewButtons) {
-  123 |         await btn.click()
 ```

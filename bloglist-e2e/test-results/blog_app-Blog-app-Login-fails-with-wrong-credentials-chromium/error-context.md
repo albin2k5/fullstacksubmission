@@ -12,33 +12,13 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
-
-```
-Error: locator.fill: Test timeout of 30000ms exceeded.
+Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3003
 Call log:
-  - waiting for locator('input').first()
+  - → POST http://127.0.0.1:3003/api/testing/reset
+    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
 
-```
-
-# Page snapshot
-
-```yaml
-- generic [ref=e3]:
-  - generic [ref=e4]: "[plugin:vite:import-analysis] Failed to resolve import \"react-router-dom\" from \"src/App.jsx\". Does the file exist?"
-  - generic [ref=e5]: /workspaces/fullstacksubmission/bloglist-frontend/src/App.jsx:2:85
-  - generic [ref=e6]: "17 | var _s = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$(); 18 | import { useState, useEffect } from \"react\"; 19 | import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from \"react-router-dom\"; | ^ 20 | const NavigationBar = ({ user, handleLogout }) => { 21 | const navStyle = {"
-  - generic [ref=e7]: at TransformPluginContext._formatLog (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42517:41) at TransformPluginContext.error (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42514:16) at normalizeUrl (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40493:23) at process.processTicksAndRejections (node:internal/process/task_queues:104:5) at async file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40612:37 at async Promise.all (index 4) at async TransformPluginContext.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40539:7) at async EnvironmentPluginContainer.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42312:18) at async loadAndTransform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35738:27) at async viteTransformMiddleware (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:37253:24
-  - generic [ref=e8]:
-    - text: Click outside, press Esc key, or fix the code to dismiss.
-    - text: You can also disable this overlay by setting
-    - code [ref=e9]: server.hmr.overlay
-    - text: to
-    - code [ref=e10]: "false"
-    - text: in
-    - code [ref=e11]: vite.config.js
-    - text: .
 ```
 
 # Test source
@@ -49,7 +29,8 @@ Call log:
   3   | describe('Blog app', () => {
   4   |   beforeEach(async ({ page, request }) => {
   5   |     // 5.18: Empty database via backend testing reset endpoint before each run
-  6   |    await request.post('http://127.0.0.1:3003/api/testing/reset')
+> 6   |    await request.post('http://127.0.0.1:3003/api/testing/reset')
+      |                  ^ Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3003
   7   | 
   8   |     // 5.18: Seed a user profile structurally into the backend
   9   |     await request.post('http://127.0.0.1:3003/api/users', {
@@ -82,8 +63,7 @@ Call log:
   36  |     })
   37  | 
   38  |     test('fails with wrong credentials', async ({ page }) => {
-> 39  |       await page.locator('input').first().fill('mluukkai')
-      |                                           ^ Error: locator.fill: Test timeout of 30000ms exceeded.
+  39  |       await page.locator('input').first().fill('mluukkai')
   40  |       await page.locator('input').nth(1).fill('wrongpassword')
   41  |       await page.getByRole('button', { name: /login/i }).click()
   42  | 
@@ -151,37 +131,4 @@ Call log:
   104 |     test('blogs are sorted descending by number of likes', async ({ page }) => {
   105 |       // Setup: Seed multiple blogs natively
   106 |       const blogsData = [
-  107 |         { title: 'Least Likes Blog', author: 'A', url: 'http://a.com' },
-  108 |         { title: 'Most Likes Blog', author: 'B', url: 'http://b.com' },
-  109 |         { title: 'Medium Likes Blog', author: 'C', url: 'http://c.com' }
-  110 |       ]
-  111 | 
-  112 |       for (const b of blogsData) {
-  113 |         await page.getByRole('button', { name: 'create new blog' }).click()
-  114 |         await page.locator('input[name="Title"]').fill(b.title)
-  115 |         await page.locator('input[name="Author"]').fill(b.author)
-  116 |         await page.locator('input[name="Url"]').fill(b.url)
-  117 |         await page.getByRole('button', { name: 'create' }).click()
-  118 |       }
-  119 | 
-  120 |       // Open detail panels to access like buttons
-  121 |       const viewButtons = await page.getByRole('button', { name: 'view' }).all()
-  122 |       for (const btn of viewButtons) {
-  123 |         await btn.click()
-  124 |       }
-  125 | 
-  126 |       // Target individual specific item components to apply uneven counts
-  127 |       const mostLikesBlock = page.locator('.blog', { hasText: 'Most Likes Blog' })
-  128 |       const medLikesBlock = page.locator('.blog', { hasText: 'Medium Likes Blog' })
-  129 | 
-  130 |       // 3 likes for Most
-  131 |       await mostLikesBlock.getByRole('button', { name: 'like' }).click()
-  132 |       await page.waitForTimeout(500)
-  133 |       await mostLikesBlock.getByRole('button', { name: 'like' }).click()
-  134 |       await page.waitForTimeout(500)
-  135 |       await mostLikesBlock.getByRole('button', { name: 'like' }).click()
-  136 | 
-  137 |       // 1 like for Medium
-  138 |       await medLikesBlock.getByRole('button', { name: 'like' }).click()
-  139 |       await page.waitForTimeout(500)
 ```

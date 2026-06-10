@@ -12,33 +12,24 @@
 # Error details
 
 ```
+Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3003
+Call log:
+  - → POST http://127.0.0.1:3003/api/testing/reset
+    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+
+```
+
+```
 Test timeout of 30000ms exceeded while running "beforeEach" hook.
 ```
 
 ```
-Error: locator.fill: Test timeout of 30000ms exceeded.
+Error: locator.fill: Test ended.
 Call log:
   - waiting for locator('input').first()
 
-```
-
-# Page snapshot
-
-```yaml
-- generic [ref=e3]:
-  - generic [ref=e4]: "[plugin:vite:import-analysis] Failed to resolve import \"react-router-dom\" from \"src/App.jsx\". Does the file exist?"
-  - generic [ref=e5]: /workspaces/fullstacksubmission/bloglist-frontend/src/App.jsx:2:85
-  - generic [ref=e6]: "17 | var _s = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$(); 18 | import { useState, useEffect } from \"react\"; 19 | import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from \"react-router-dom\"; | ^ 20 | const NavigationBar = ({ user, handleLogout }) => { 21 | const navStyle = {"
-  - generic [ref=e7]: at TransformPluginContext._formatLog (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42517:41) at TransformPluginContext.error (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42514:16) at normalizeUrl (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40493:23) at process.processTicksAndRejections (node:internal/process/task_queues:104:5) at async file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40612:37 at async Promise.all (index 4) at async TransformPluginContext.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:40539:7) at async EnvironmentPluginContainer.transform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:42312:18) at async loadAndTransform (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:35738:27) at async viteTransformMiddleware (file:///workspaces/fullstacksubmission/bloglist-frontend/node_modules/vite/dist/node/chunks/dep-Bu492Fnd.js:37253:24
-  - generic [ref=e8]:
-    - text: Click outside, press Esc key, or fix the code to dismiss.
-    - text: You can also disable this overlay by setting
-    - code [ref=e9]: server.hmr.overlay
-    - text: to
-    - code [ref=e10]: "false"
-    - text: in
-    - code [ref=e11]: vite.config.js
-    - text: .
 ```
 
 # Test source
@@ -94,7 +85,7 @@ Call log:
   48  |     describe('When logged in', () => {
   49  |     beforeEach(async ({ page }) => {
 > 50  |       await page.locator('input').first().fill('mluukkai')
-      |                                           ^ Error: locator.fill: Test timeout of 30000ms exceeded.
+      |                                           ^ Error: locator.fill: Test ended.
   51  |       await page.locator('input').nth(1).fill('salainen')
   52  |       await page.getByRole('button', { name: /login/i }).click()
   53  |     })
