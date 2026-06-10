@@ -1,17 +1,15 @@
 {
-  "name": "phonebook-backend",
+  "name": "fullstacksubmission-root",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Root workspace orchestration panel",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "morgan": "^1.10.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
+    "frontend:install": "cd frontend && npm install",
+    "backend:install": "cd backend && npm install",
+    "install:all": "npm run backend:install && npm run frontend:install",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npx json-server --port 4500 --watch db.json",
+    "build:frontend": "cd frontend && npm run build && rm -rf ../backend/dist && cp -r dist ../backend/",
+    "production:start": "cd backend && npx json-server --port 4500 --static ./dist db.json",
+    "start": "npm run build:frontend && npm run production:start"
   }
 }
